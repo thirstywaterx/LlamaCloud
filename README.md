@@ -18,3 +18,7 @@ LlamaCloud 是一个开源项目，让个人在服务器上轻松部署 Llama AI
 之后回到网站根目录，将PHP文件中的YOUR_API_TOKEN，YOUR_ACCOUNT_ID分别修改为你获得的秘钥。
 
 之后访问你的网站，即可使用。
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=thirstywaterx/LlamaCloud&type=Date)](https://star-history.com/#thirstywaterx/LlamaCloud&Date)
