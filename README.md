@@ -9,4 +9,12 @@ LlamaCloud 是一个开源项目，让个人在服务器上轻松部署 Llama AI
 将其源代码放入网站根目录即可。
 
 ## 配置
-首先进入[Cloudflare Dashboard] (https://dash.cloudflare.com)，登录，如果没有账号就注册一个。
+首先进入 [Cloudflare](https://dash.cloudflare.com) ，登录，如果没有账号就注册一个。
+
+点击左侧栏的Workers和Pages，找到账户ID，复制它，作为YOUR_ACCOUNT_ID。
+
+接着点击右上角头像，我的个人资料，在左侧栏点击API令牌。进入后，创建一个令牌，使用Workers AI模板，不用修改设置，确定即可。之后你会获取一串字符，作为YOUR_API_TOKEN。
+
+之后回到网站根目录，将PHP文件中的YOUR_API_TOKEN，YOUR_ACCOUNT_ID分别修改为你获得的秘钥。
+
+之后访问你的网站，即可使用。
