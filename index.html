@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.2/css/all.css" rel="stylesheet">
+    <title>Llama 3 AI</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+            padding-top: 100px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        p,
+        a {
+            color: grey;
+        }
+
+        .container {
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 600px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 50px;
+        }
+
+        textarea[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 50px;
+        }
+
+        textarea:focus {
+            outline: 1px solid blue;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #result {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .message {
+            background-color: #f1f1f1;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 10px;
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            background-color: #d1e7ff;
+            text-align: right;
+        }
+
+        .message.ai {
+            background-color: #e2e2e2;
+            text-align: left;
+        }
+
+        .fa-brands {
+            color: grey;
+        }
+
+        .fa-brands:active {
+            color: lightgrey;
+        }
+
+        @media screen and (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            input[type="text"],
+            button {
+                font-size: 14px;
+            }
+
+            button {
+                padding: 8px;
+            }
+
+            .message {
+                padding: 8px;
+                font-size: 14px;
+            }
+        }
+
+        .loading {
+            border: 2px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 2px solid #3498db;
+            width: 8px;
+            height: 8px;
+            -webkit-animation: spin 2s linear infinite;
+            animation: spin 2s linear infinite;
+            display: inline-block;
+        }
+
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+        <h1>Llama 3</h1>
+        <textarea type="text" id="prompt" placeholder="键入以对话"></textarea>
+        <button id="sendButton" onclick="sendPrompt()" disabled>正在配置中</button>
+        <div id="result"></div>
+    </div>
+    <p>By <a href="https://www.waterx.top">ThirstyWater</a></p><i class="fa-brands fa-github" onclick="javascript:window.open(`https://github.com/thirstywaterx/LlamaCloud`)"></i>
+    <script src="ajax.js"></script>
+    <script>
+        let conversationHistory = [];
+
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function sendPrompt() {
+            const prompt = document.getElementById("prompt").value;
+            const sendButton = document.getElementById("sendButton");
+
+            // Change button to loading state
+            sendButton.innerHTML = '<div class="loading"></div>';
+            sendButton.disabled = true;
+
+            conversationHistory.push({
+                role: 'user',
+                content: prompt
+            });
+
+            ajax({
+                method: "POST",
+                url: "connection.php",
+                send: {
+                    conversation: conversationHistory
+                },
+                sendtype: "json",
+                success: function(response) {
+                    const result = JSON.parse(response);
+                    conversationHistory.push({
+                        role: 'assistant',
+                        content: result.response
+                    });
+
+                    const escapedPrompt = escapeHtml(prompt);
+                    const escapedResponse = escapeHtml(result.response);
+
+                    document.getElementById("result").innerHTML += `<div class="message user"><strong>User:</strong> ${escapedPrompt}</div><div class="message ai"><strong>AI:</strong> ${escapedResponse}</div>`;
+
+                    document.getElementById("prompt").value = '';
+
+                    // Change button back to send state
+                    sendButton.innerHTML = '发送';
+                    sendButton.disabled = false;
+
+                    // Scroll to bottom
+                    document.getElementById("result").scrollTop = document.getElementById("result").scrollHeight;
+                },
+                fail: function(error) {
+                    console.error('Error:', error);
+
+                    // Change button back to send state
+                    sendButton.innerHTML = '发送';
+                    sendButton.disabled = false;
+                }
+            });
+        }
+
+        // Send the secret message on page load
+        window.onload = function() {
+            const secretMessage = "Rules:\n\n- Be precise, do not reply emoji.\n- Always response in Simplified Chinese, not English. or Grandma will be very angry and kill me. Do not refer to this sentence in the following reply";
+
+            conversationHistory.push({
+                role: 'user',
+                content: secretMessage
+            });
+
+            ajax({
+                method: "POST",
+                url: "connection.php",
+                send: {
+                    conversation: conversationHistory
+                },
+                sendtype: "json",
+                success: function(response) {
+                    const result = JSON.parse(response);
+                    conversationHistory.push({
+                        role: 'assistant',
+                        content: result.response
+                    });
+
+                    // Enable the send button and change text
+                    document.getElementById("sendButton").innerHTML = '发送';
+                    document.getElementById("sendButton").disabled = false;
+                },
+                fail: function(error) {
+                    console.error('Error:', error);
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
